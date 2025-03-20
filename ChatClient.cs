@@ -7,16 +7,6 @@ using System.Threading.Tasks;
 
 namespace ChatApplication
 {
-    /// <summary>
-    /// Hanterar nätverkskommunikationen med TcpListener/TcpClient enligt vårt enkla protokoll:
-    /// INVITE|UserName
-    /// ACCEPT|UserName
-    /// REJECT|UserName
-    /// CHAT|UserName|Meddelande
-    /// BUZZ|UserName
-    /// IMAGE|UserName|Base64Bild
-    /// DISCONNECT|UserName
-    /// </summary>
     public class ChatClient
     {
         public TcpClient Client { get; private set; }
@@ -38,18 +28,17 @@ namespace ChatApplication
             {
                 Listener = new TcpListener(IPAddress.Any, port);
                 Listener.Start();
-                // Vänta på en anslutning
+                // Wait 4 Connection
                 Client = await Listener.AcceptTcpClientAsync();
                 Stream = Client.GetStream();
                 IsConnected = true;
-                // Första meddelandet bör vara en inbjudan
                 string invitation = await ReadMessageAsync();
                 if (invitation.StartsWith("INVITE|"))
                 {
                     string inviterName = invitation.Split('|')[1];
                     OnInvitationReceived?.Invoke(inviterName);
                 }
-                // Starta bakgrundstråd för att lyssna på vidare meddelanden
+                // Bkgrnd thread to listen for messages
                 cts = new CancellationTokenSource();
                 Task.Run(() => ListenForMessagesAsync(cts.Token));
             }
@@ -67,10 +56,10 @@ namespace ChatApplication
                 await Client.ConnectAsync(ip, port);
                 Stream = Client.GetStream();
                 IsConnected = true;
-                // Skicka inbjudan med vårt användarnamn
+                // Send invite with usrname
                 string inviteMsg = $"INVITE|{UserName}";
                 await SendMessageAsync(inviteMsg);
-                // Vänta på svar (ACCEPT eller REJECT)
+                // (ACCEPT eller REJECT)
                 string response = await ReadMessageAsync();
                 OnInvitationResponse?.Invoke(response);
                 if (response.StartsWith("ACCEPT"))
@@ -156,7 +145,7 @@ namespace ChatApplication
                     break;
                 }
                 sb.Append(Encoding.UTF8.GetString(buffer, 0, bytesRead));
-                // Om vi har mottagit ett newline-tecken så antar vi att meddelandet är komplett.
+                // Om newline-tecken så antas att meddelandet är komplett.
                 if (sb.ToString().Contains("\n"))
                 {
                     break;
@@ -187,7 +176,7 @@ namespace ChatApplication
                         OnDisconnected?.Invoke();
                         break;
                     }
-                    // Tolka meddelandet enligt vårt protokoll
+                    // Tolka meddelandet enligt protokoll!
                     string[] parts = message.Split('|');
                     if (parts.Length >= 2)
                     {

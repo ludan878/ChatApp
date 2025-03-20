@@ -2,7 +2,6 @@
 
 namespace ChatApplication
 {
-    // Egengjord exception-klass med de tre standardkonstruktörerna.
     public class ChatException : Exception
     {
         public ChatException() : base() { }

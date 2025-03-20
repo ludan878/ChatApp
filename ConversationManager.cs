@@ -53,10 +53,14 @@ namespace ChatApplication
 
         public List<Conversation> Search(string query)
         {
-            return Conversations
-                .Where(c => c.Participant.IndexOf(query, StringComparison.OrdinalIgnoreCase) >= 0)
-                .OrderByDescending(c => c.StartTime)
-                .ToList();
+            var results = (
+                from c in Conversations
+                where c.Participant.IndexOf(query, StringComparison.OrdinalIgnoreCase) >= 0
+                orderby c.StartTime descending
+                select c
+            ).ToList();
+            return results;
         }
+
     }
 }

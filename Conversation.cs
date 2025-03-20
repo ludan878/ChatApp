@@ -9,7 +9,7 @@ namespace ChatApplication
         public string Participant { get; set; }
         public List<Message> Messages { get; set; }
 
-        // Används vid visning i historiklistan
+        // Används vid visning i historik
         public string DisplayText => $"Konversation med {Participant} - {StartTime:g}";
     }
 }
